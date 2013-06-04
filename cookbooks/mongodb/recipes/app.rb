@@ -26,6 +26,9 @@ if node[:utility_instances].empty?
       else
         hosts = @node[:mongo_utility_instances].select { |instance| instance[:name].match(/#{mongo_app_name}/) }.map { |instance| [ instance[:hostname], @node[:mongo_port].to_i ] }
         hosts += @node[:mongo_utility_instances].select { |instance| instance[:name].match(/^mongodb_repl/) }.map { |instance| [ instance[:hostname], @node[:mongo_port].to_i ] }
+        if hosts.empty?
+          hosts += @node[:mongo_utility_instances].select { |instance| instance[:name].match(/mongodb/) }.map { |instance| [ instance[:hostname], @node[:mongo_port].to_i ] }
+        end
         variables(:yaml_file => {
           node[:environment][:framework_env] => {
             :hosts => hosts} })
@@ -43,6 +46,9 @@ if node[:utility_instances].empty?
       replica_set = @node[:mongo_utility_instances].any? { |instance| instance[:name].match(/^mongodb_repl/) }
       if replica_set
         hosts += @node[:mongo_utility_instances].select { |instance| instance[:name].match(/^mongodb_repl/) }.map { |instance| [ instance[:hostname], @node[:mongo_port].to_i ] }
+      end
+      if hosts.empty?
+        hosts += @node[:mongo_utility_instances].select { |instance| instance[:name].match(/mongodb/) }.map { |instance| [ instance[:hostname], @node[:mongo_port].to_i ] }
       end
       variables(:environment => node[:environment][:framework_env], 
                 :hosts => hosts,
